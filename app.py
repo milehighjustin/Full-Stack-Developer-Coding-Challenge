@@ -62,6 +62,7 @@ def add_user():
             # Add this option to distinct the POST request
             "METHOD" : "POST"
         })
+
     else:
         return jsonify({
             "error": "Invalid Request"
@@ -72,4 +73,4 @@ def index():
     return "<h1>Welcomet to SpaceFlask 🚀</h1>"
 
 if __name__ == '__main__':
-    app.run(threaded=True, port=5000)
+    app.run(threaded=True)
