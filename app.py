@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import json
 import mysql.connector as mysql
 import bcrypt
 import secrets
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./grmfront/dist')
 
 db = mysql.connect(
         host = os.getenv('DBHOST'),
@@ -24,6 +24,16 @@ def getuserbyemail(email):
     except:
         return "error"
 
+def getuser(userid):
+    try:
+        cursor = db.cursor(buffered=True)
+        query = "SELECT * from users WHERE id = %s"
+        values = (userid, )
+        cursor.execute(query, values)
+        return cursor.fetchone()
+    except:
+        return "error"
+
 def createtoken(user):
     token = secrets.token_hex(20)
     query = "INSERT into tokens (userid, token) VALUES (%s, %s)"
@@ -33,8 +43,86 @@ def createtoken(user):
     db.commit()
     return token
 
+def checkauth():
+    try:
+        token = request.headers.get('authtoken')
+        query = "SELECT * from tokens WHERE token = %s"
+        values = (token, )
+        cursor = db.cursor(buffered=True)
+        cursor.execute(query, values)
+        if cursor.rowcount > 0:
+            record = cursor.fetchone()
+            return (True, record[1])
+        else:
+            return False
+    except:
+        return False
+
+def getalerts():
+    try:
+        query = "SELECT * from alerts"
+        cursor = db.cursor(buffered=True)
+        cursor.execute(query)
+        alerts = cursor.fetchall()
+        response = []
+        for alert in alerts:
+            aresp = {
+                'errorId' : alert[0],
+                'errorSeverity': alert[1],
+                'errorCategory': alert[2],
+                'errorMessage': alert[3],
+                'longMessage': alert[4],
+                'errorTime': alert[5],
+                'selected': alert[6],
+                'new': alert[7],
+                'expanded': alert[8]
+            }
+            response.append(aresp)
+        return response
+    except:
+        return []
+
+def getcontacts():
+    try:
+        query = "SELECT * from contacts"
+        cursor = db.cursor(buffered=True)
+        cursor.execute(query)
+        contacts = cursor.fetchall()
+        response = []
+        for contact in contacts:
+            cresp = {
+                '_id' : contact[0],
+                'contactId': contact[1],
+                'contactStatus': contact[2],
+                'contactName': contact[3],
+                'contactGround': contact[4],
+                'contactSatellite': contact[5],
+                'contactEquipment': contact[6],
+                'contactState': contact[7],
+                'contactStep': contact[8],
+                'contactDetail': contact[9],
+                'contactBeginTimestamp': contact[10],
+                'contactEndTimestamp': contact[11],
+                'contactLatitude': contact[12],
+                'contactLongitude': contact[13],
+                'contactAzimuth': contact[14],
+                'contactElevation': contact[15],
+                'contactResolution': contact[16],
+                'contactResolutionStatus': contact[17]
+            }
+            response.append(cresp)
+        return response
+    except:
+        return []
+
 @app.route('/refreshdata/', methods=['GET'])
 def refresh_data():
+    query = "TRUNCATE table alerts"
+    cursor = db.cursor(buffered=True)
+    cursor.execute(query)
+    query = "TRUNCATE table contacts"
+    cursor = db.cursor(buffered=True)
+    cursor.execute(query)
     fileObject = open("alerts.json", "r")
     jsonContent = fileObject.read()
     jsonObj = json.loads(jsonContent)
@@ -53,7 +141,33 @@ def refresh_data():
         cursor = db.cursor(buffered=True)
         cursor.execute(query, values)
         db.commit()
+    return "complete"
 
+@app.route('/getappdata/', methods=['post'])
+def get_app_data():
+    auth = checkauth()
+    if auth != False:
+        userid = auth[1]
+        userdata = getuser(userid)
+        user = {
+            "userf": userdata[1],
+            "userl": userdata[2],
+            "userid": userdata[0],
+            "useremail": userdata[3]
+        }
+        alerts = getalerts()
+        contacts = getcontacts()
+        response = {
+            "user": user,
+            "alerts": alerts,
+            "contacts": contacts
+        }
+        return jsonify(response)
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "noauth"
+        })
 
 
 @app.route('/login/', methods=['POST'])
@@ -137,7 +251,15 @@ def add_user():
 
 @app.route('/')
 def index():
-    return "<h1>Welcome to SpaceFlask 🚀</h1>"
+    return send_from_directory('./grmfront/dist/', 'index.html')
+
+@app.route('/<path:path>')
+def catch_all(path):
+    try:
+        return app.send_static_file(path)
+    except:
+        return "Welcome to GRM"
+
 
 if __name__ == '__main__':
     app.run(threaded=True)
