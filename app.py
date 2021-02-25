@@ -33,6 +33,28 @@ def createtoken(user):
     db.commit()
     return token
 
+@app.route('/refreshdata/', methods=['GET'])
+def refresh_data():
+    fileObject = open("alerts.json", "r")
+    jsonContent = fileObject.read()
+    jsonObj = json.loads(jsonContent)
+    for alert in jsonObj:
+        query = "INSERT into alerts (errorId, errorSeverity, errorCategory, errorMessage, longMessage, errorTime, selected, new, expanded) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        values = (alert['errorId'], alert['errorSeverity'], alert['errorCategory'], alert['errorMessage'], alert['longMessage'], alert['errorTime'], alert['selected'], alert['new'], alert['expanded'])
+        cursor = db.cursor(buffered=True)
+        cursor.execute(query, values)
+        db.commit()
+    fileObject2 = open("contacts.json", "r")
+    jsonContent = fileObject2.read()
+    jsonObj = json.loads(jsonContent)
+    for contact in jsonObj:
+        query = "INSERT into contacts (_id, contactId, contactStatus, contactName, contactGround, contactSatellite, contactEquipment, contactState, contactStep, contactDetail, contactBeginTimestamp, contactEndTimestamp, contactLatitude, contactLongitude, contactAzimuth, contactElevation, contactResolution, contactResolutionStatus) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        values = (contact['_id'], contact['contactId'], contact['contactStatus'], contact['contactName'], contact['contactGround'], contact['contactSatellite'], contact['contactEquipment'], contact['contactState'], contact['contactStep'], contact['contactDetail'], contact['contactBeginTimestamp'], contact['contactEndTimestamp'], contact['contactLatitude'], contact['contactLongitude'], contact['contactAzimuth'], contact['contactElevation'], contact['contactResolution'], contact['contactResolutionStatus'])
+        cursor = db.cursor(buffered=True)
+        cursor.execute(query, values)
+        db.commit()
+
+
 
 @app.route('/login/', methods=['POST'])
 def login_user():
