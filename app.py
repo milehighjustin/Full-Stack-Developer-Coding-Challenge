@@ -8,11 +8,11 @@ import os
 app = Flask(__name__)
 
 db = mysql.connect(
-            host = os.getenv('DBHOST'),
-            user = os.getenv('DBUSER'),
-            passwd = os.getenv('DBPASS'),
-            database = os.getenv('DBNAME')
-        )
+        host = os.getenv('DBHOST'),
+        user = os.getenv('DBUSER'),
+        passwd = os.getenv('DBPASS'),
+        database = os.getenv('DBNAME')
+    )
 
 def getuserbyemail(email):
     try:
