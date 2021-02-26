@@ -1,1 +1,1 @@
-web: waitress-serve --port=$PORT app:app
+web: waitress-serve --port=$PORT --trusted-proxy="*" --trusted-proxy-headers="x-forwarded-for x-forwarded-proto x-forwarded-port" app:app
