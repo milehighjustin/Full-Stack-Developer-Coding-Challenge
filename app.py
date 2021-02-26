@@ -46,7 +46,6 @@ def createtoken(user):
 def checkauth():
     try:
         token = request.headers.get('authtoken')
-        print(token)
         query = "SELECT * from tokens WHERE token = %s"
         values = (token, )
         cursor = db.cursor(buffered=True)
