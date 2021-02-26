@@ -193,7 +193,7 @@ def refresh_data():
         cursor.close()
     return "complete"
 
-@app.route('/getappdata/', methods=['post'])
+@app.route('/getappdata/', methods=['POST'])
 def get_app_data():
     auth = checkauth()
     if auth[0] == True:
@@ -219,7 +219,7 @@ def get_app_data():
             "message": "noauth"
         })
 
-@app.route('/getalerts/', methods=['post'])
+@app.route('/getalerts/', methods=['POST'])
 def get_alerts():
     auth = checkauth()
     if auth[0] == True:
@@ -234,7 +234,7 @@ def get_alerts():
             "message": "noauth"
         })
 
-@app.route('/getcontacts/', methods=['post'])
+@app.route('/getcontacts/', methods=['POST'])
 def get_contacts():
     auth = checkauth()
     if auth[0] == True:
