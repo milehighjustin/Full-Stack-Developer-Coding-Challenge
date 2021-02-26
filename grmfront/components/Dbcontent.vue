@@ -12,7 +12,7 @@
                     <th><span style="font-weight: 200;">{{categories.length }}</span> Category <div style="display: inline-block;" @click="sortAlertsAlpha"><b-icon-sort-alpha-down></b-icon-sort-alpha-down></div></th>
                     <th>Time</th>
                 </tr>
-                <tr v-for="alert in alerts" :key="alert"><td>{{ alert['errorMessage'] }}</td><td>{{ alert['errorCategory'] }}</td><td>{{ converttime(alert['errorTime']) }}</td></tr>
+                <tr v-for="alert in alerts" :key="alert"><td>{{ alert['errorMessage'] }}</td><td>{{ alert['errorCategory'] }}</td><td>{{ convertalerttime(alert['errorTime']) }}</td></tr>
             </table>
             <div class="loadingprogress" v-if="loadingalert"><rux-progress></rux-progress></div>
         </b-col>
@@ -110,6 +110,9 @@ export default {
       },
       converttime(timeobj){
           return moment(timeobj).format('h:mm:ss')
+      },
+      convertalerttime(timeobj){
+          return moment.unix(timeobj).format('h:mm:ss')
       }
   },
   mounted(){
