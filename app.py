@@ -253,10 +253,15 @@ def add_user():
 def index():
     return send_from_directory('./grmfront/dist/', 'index.html')
 
+@app.route('/dashboard')
+def dashboard():
+    return send_from_directory('./grmfront/dist/db', 'index.html')
+
 @app.route('/<path:path>')
 def catch_all(path):
     try:
-        return app.send_static_file(path)
+        # return app.send_static_file(path)
+        return send_from_directory('./grmfront/dist/', path)
     except:
         return "Welcome to GRM"
 
