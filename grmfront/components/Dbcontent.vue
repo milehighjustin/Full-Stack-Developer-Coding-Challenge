@@ -1,28 +1,24 @@
 <template>
     <div>
-        <b-container>
+        <b-container fluid>
     <b-row>
-        <b-col style="width: 100%;" sm>
-            <rux-global-status-bar>
+        <b-col cols="5">
+            <tr>
                 <h1>Alerts</h1>
-            </rux-global-status-bar>
+            </tr>
             <table class="rux-table">
                 <tr class="rux-table__column-head">
                     <th>Message</th>
                     <th>Category</th>
                     <th>Time</th>
                 </tr>
-                <tr>
-                    <td>Name</td>
-                    <td>Status</td>
-                    <td>Begin Timestamp</td>
-                </tr>
+                <tr v-for="alert in alerts" :key="alert"><td>{{ alert['errorMessage'] }}</td><td>{{ alert['errorCategory'] }}</td><td>{{ alert['errorTime'] }}</td></tr>
             </table>
         </b-col>
-        <b-col sm>
-            <rux-global-status-bar>
+        <b-col cols="7">
+            <tr>
                 <h1>Contacts</h1>
-            </rux-global-status-bar>
+            </tr>
             <table class="rux-table">
                 <tr class="rux-table__column-head">
                     <th>Name</th>
@@ -30,12 +26,7 @@
                     <th>Begin Timestamp</th>
                     <th>End Timestamp</th>
                 </tr>
-                <tr>
-                    <td>Name</td>
-                    <td>Status</td>
-                    <td>Begin Timestamp</td>
-                    <td>End Timestamp</td>
-                </tr>
+                <tr v-for="contact in contacts" :key="contact"><td>{{ contact['contactName'] }}</td><td>{{ contact['contactStatus'] }}</td><td>{{ contact['contactBeginTimestamp'] }}</td><td>{{ contact['contactEndTimestamp'] }}</td></tr>
             </table>
         </b-col>
         </b-row>
@@ -50,12 +41,50 @@ import { RuxIcon } from '@astrouxds/rux-icon/rux-icon.js';
 
 export default {
   name: 'Dbcontent',
+  data() {
+      return{
+          alerts: {},
+          contact: {},
+          user: {}
+      }
+  },
   head() {
       return {
           bodyAttrs: {
               class: "dark-theme"
           }
       }
+  },
+  methods: {
+      processAppData(data){
+          this.alerts = data['alerts']
+          this.contacts = data['contacts']
+          this.user = data['user']
+      },
+      errorNotify(){
+
+      }
+  },
+  beforeMount(){
+      try{
+                const fetchbody = {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'Application/json',
+                        'authtoken': window.localStorage.getItem("authtoken")},
+                    body:  JSON.stringify({})
+                    }
+                fetch('/getappdata', fetchbody).then((response) => response.json()).then(
+                    data => (
+                        this.processAppData(data)
+                    )
+                ).catch(error => 
+                    this.errorNotify()
+                );
+                }
+                catch(e) {
+                    this.errorNotify()
+                }
   }
 }
 </script>
