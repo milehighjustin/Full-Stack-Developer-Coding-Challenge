@@ -78,7 +78,8 @@ export default {
             registeruserf: "",
             registeruserl: "",
             registeremail: "",
-            registerpass: ""
+            registerpass: "",
+            logoutshow: false
         }
     },
     methods: {

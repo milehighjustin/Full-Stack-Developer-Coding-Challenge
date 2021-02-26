@@ -2,32 +2,34 @@
     <div>
         <b-container fluid>
     <b-row>
-        <b-col cols="5">
+        <b-col class="dbcol" cols="5">
             <tr>
-                <h1>Alerts</h1>
+                <h1>Alerts ({{alerts.length}}) </h1>
             </tr>
             <table class="rux-table">
                 <tr class="rux-table__column-head">
                     <th>Message</th>
-                    <th>Category</th>
+                    <th><span style="font-weight: 200;">{{categories.length }}</span> Category <div style="display: inline-block;" @click="sortAlertsAlpha"><b-icon-sort-alpha-down></b-icon-sort-alpha-down></div></th>
                     <th>Time</th>
                 </tr>
-                <tr v-for="alert in alerts" :key="alert"><td>{{ alert['errorMessage'] }}</td><td>{{ alert['errorCategory'] }}</td><td>{{ alert['errorTime'] }}</td></tr>
+                <tr v-for="alert in alerts" :key="alert"><td>{{ alert['errorMessage'] }}</td><td>{{ alert['errorCategory'] }}</td><td>{{ convert(alert['errorTime']) }}</td></tr>
             </table>
+            <div class="loadingprogress" v-if="loadingalert"><rux-progress></rux-progress></div>
         </b-col>
-        <b-col cols="7">
+        <b-col class="dbcol" cols="7">
             <tr>
-                <h1>Contacts</h1>
+                <h1>Contacts ({{contacts.length}})</h1>
             </tr>
             <table class="rux-table">
                 <tr class="rux-table__column-head">
-                    <th>Name</th>
+                    <th>Name <div style="display: inline-block;" @click="sortContactsAlpha"><b-icon-sort-alpha-down></b-icon-sort-alpha-down></div></th>
                     <th>Status</th>
                     <th>Begin Timestamp</th>
                     <th>End Timestamp</th>
                 </tr>
-                <tr v-for="contact in contacts" :key="contact"><td>{{ contact['contactName'] }}</td><td>{{ contact['contactStatus'] }}</td><td>{{ contact['contactBeginTimestamp'] }}</td><td>{{ contact['contactEndTimestamp'] }}</td></tr>
+                <tr v-for="contact in contacts" :key="contact"><td>{{ contact['contactName'] }}</td><td>{{ contact['contactStatus'] }}</td><td>{{ converttime(contact['contactBeginTimestamp']) }}</td><td>{{ converttime(contact['contactEndTimestamp']) }}</td></tr>
             </table>
+        <div class="loadingprogress" v-if="loadingcontact"><rux-progress></rux-progress></div>
         </b-col>
         </b-row>
     </b-container>
@@ -38,14 +40,19 @@
 <script>
 import { RuxGlobalStatusBar } from '@astrouxds/rux-global-status-bar/rux-global-status-bar.js'
 import { RuxIcon } from '@astrouxds/rux-icon/rux-icon.js';
+import { RuxProgress } from '@astrouxds/rux-progress/rux-progress.js';
+import moment from 'moment'
 
 export default {
   name: 'Dbcontent',
   data() {
       return{
-          alerts: {},
-          contacts: {},
-          user: {}
+          alerts: [],
+          contacts: [{contactBeginTimestamp: 1542134265725}],
+          user: [],
+          categories: [],
+          loadingalert: true,
+          loadingcontact: true,
       }
   },
   head() {
@@ -57,16 +64,58 @@ export default {
   },
   methods: {
       processAlerts(data){
+          this.loadingalert = false
           this.alerts = data['alerts']
+          for(let i=0; i < data['alerts'].length; i++){
+              console.log(data['alerts'][i].errorCategory)
+              if(this.categories.includes(data['alerts'][i].errorCategory)){   
+              }
+              else{
+                  this.categories.push(data['alerts'][i].errorCategory) 
+              }
+          }
       },
       processContacts(data){
+          this.loadingcontact = false
           this.contacts = data['contacts']
       },
+      sortContactsAlpha(){
+          this.contacts.sort((a, b) => {
+                let fa = a.contactName.toLowerCase()
+                let fb = b.contactName.toLowerCase()
+                if (fa < fb) {
+                    return -1;
+                }
+                if (fa > fb) {
+                    return 1;
+                }
+                return 0;
+            })
+      },
+      sortAlertsAlpha(){
+          this.alerts.sort((a, b) => {
+                let fa = a.errorCategory.toLowerCase()
+                let fb = b.errorCategory.toLowerCase()
+                if (fa < fb) {
+                    return -1;
+                }
+                if (fa > fb) {
+                    return 1;
+                }
+                return 0;
+            })
+      },     
       errorNotify(){
 
+      },
+      converttime(timeobj){
+          return moment(timeobj).format('h:mm:ss')
       }
   },
   mounted(){
+      if(!window.localStorage.getItem("authtoken")){
+          window.location.href="./"
+      }
       try{
                 const fetchbody = {
                     method: "POST",
@@ -110,5 +159,33 @@ export default {
 </script>
 
 <style scoped>
+.dbcol {
+    overflow: scroll;
+    height: calc(100vh - 140px);
+    width: 100%;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+</style>
+
+<style>
+.container-fluid{
+
+    height: calc(100vh - 140px);
+    margin-top: 20px;
+    position: fixed;
+    width: 100%;
+}
+
+.loadingprogress {
+    margin-top: 100px;
+    width: 100%;
+    display: inline-block;
+}
 
 </style>
