@@ -65,14 +65,14 @@ export default {
 
       }
   },
-  beforeMount(){
+  mounted(){
       try{
                 const fetchbody = {
                     method: "POST",
                     headers: {
                         'Content-Type': 'Application/json',
                         'authtoken': window.localStorage.getItem("authtoken")},
-                    body:  JSON.stringify({})
+                    body:  JSON.stringify({status: "get"})
                     }
                 fetch('/getappdata', fetchbody).then((response) => response.json()).then(
                     data => (
