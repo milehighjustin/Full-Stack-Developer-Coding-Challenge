@@ -1,1 +1,1 @@
-web: gunicorn --no-sendfile app:app
+web: gunicorn --workers=5 --no-sendfile app:app
