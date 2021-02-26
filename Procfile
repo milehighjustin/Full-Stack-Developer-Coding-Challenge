@@ -1,1 +1,1 @@
-web: waitress-serve --port=59620 app:app
+web: gunicorn --workers=5 --worker-connections=1000 --no-sendfile app:app --reload
