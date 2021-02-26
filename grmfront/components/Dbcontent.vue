@@ -9,7 +9,7 @@
             <table class="rux-table">
                 <tr class="rux-table__column-head">
                     <th>Message</th>
-                    <th><span style="font-weight: 200;">{{categories.length }}</span> Category <div style="display: inline-block;" @click="sortAlertsAlpha"><b-icon-sort-alpha-down></b-icon-sort-alpha-down></div></th>
+                    <th> Category <div style="display: inline-block;" @click="sortAlertsAlpha"><b-icon-sort-alpha-down></b-icon-sort-alpha-down></div></th>
                     <th>Time</th>
                 </tr>
                 <tr v-for="alert in alerts" :key="alert"><td>{{ alert['errorMessage'] }}</td><td>{{ alert['errorCategory'] }}</td><td>{{ convertalerttime(alert['errorTime']) }}</td></tr>
@@ -18,7 +18,7 @@
         </b-col>
         <b-col class="dbcol" cols="7">
             <tr>
-                <h1>Contacts ({{contacts.length}})</h1>
+                <h1>Contacts ({{contacts.length}}) | <span style="font-size: 75%">Total Contact States ({{states.length }})</span></h1><br>
             </tr>
             <table class="rux-table">
                 <tr class="rux-table__column-head">
@@ -50,7 +50,7 @@ export default {
           alerts: [],
           contacts: [],
           user: [],
-          categories: [],
+          states: [],
           loadingalert: true,
           loadingcontact: true,
       }
@@ -66,18 +66,17 @@ export default {
       processAlerts(data){
           this.loadingalert = false
           this.alerts = data['alerts']
-          for(let i=0; i < data['alerts'].length; i++){
-              console.log(data['alerts'][i].errorCategory)
-              if(this.categories.includes(data['alerts'][i].errorCategory)){   
-              }
-              else{
-                  this.categories.push(data['alerts'][i].errorCategory) 
-              }
-          }
       },
       processContacts(data){
           this.loadingcontact = false
           this.contacts = data['contacts']
+            for(let i=0; i < data['contacts'].length; i++){
+              if(this.states.includes(data['contacts'][i].contactState)){   
+              }
+              else{
+                  this.states.push(data['contacts'][i].contactState) 
+              }
+          }
       },
       sortContactsAlpha(){
           this.contacts.sort((a, b) => {
