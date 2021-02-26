@@ -48,7 +48,7 @@ export default {
   data() {
       return{
           alerts: [],
-          contacts: [{contactBeginTimestamp: 1542134265725}],
+          contacts: [],
           user: [],
           categories: [],
           loadingalert: true,
@@ -109,10 +109,10 @@ export default {
 
       },
       converttime(timeobj){
-          return moment(timeobj).format('h:mm:ss')
+          return moment(timeobj).utc().format('HH:mm:ss')
       },
       convertalerttime(timeobj){
-          return moment.unix(timeobj).format('h:mm:ss')
+          return moment.unix(timeobj).utc().format('HH:mm:ss')
       }
   },
   mounted(){
