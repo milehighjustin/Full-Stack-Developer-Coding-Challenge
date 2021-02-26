@@ -7,63 +7,95 @@ import os
 
 app = Flask(__name__, static_folder='./grmfront/dist')
 
-db = mysql.connect(
-        host = os.getenv('DBHOST'),
-        user = os.getenv('DBUSER'),
-        passwd = os.getenv('DBPASS'),
-        database = os.getenv('DBNAME')
-    )
 
 def getuserbyemail(email):
     try:
+        db = mysql.connect(
+            host = os.getenv('DBHOST'),
+            user = os.getenv('DBUSER'),
+            passwd = os.getenv('DBPASS'),
+            database = os.getenv('DBNAME')
+        )
         cursor = db.cursor(buffered=True)
         query = "SELECT * from users WHERE email = %s"
         values = (email, )
         cursor.execute(query, values)
+        db.close()
         return cursor.fetchone()
     except:
         return "error"
 
 def getuser(userid):
     try:
+        db = mysql.connect(
+            host = os.getenv('DBHOST'),
+            user = os.getenv('DBUSER'),
+            passwd = os.getenv('DBPASS'),
+            database = os.getenv('DBNAME')
+        )
         cursor = db.cursor(buffered=True)
         query = "SELECT * from users WHERE id = %s"
         values = (userid, )
         cursor.execute(query, values)
+        db.close()
         return cursor.fetchone()
     except:
         return "error"
 
 def createtoken(user):
-    token = secrets.token_hex(20)
-    query = "INSERT into tokens (userid, token) VALUES (%s, %s)"
-    values = (user, token)
-    cursor = db.cursor(buffered=True)
-    cursor.execute(query, values)
-    db.commit()
-    return token
+    try:
+        db = mysql.connect(
+            host = os.getenv('DBHOST'),
+            user = os.getenv('DBUSER'),
+            passwd = os.getenv('DBPASS'),
+            database = os.getenv('DBNAME')
+        )
+        token = secrets.token_hex(20)
+        query = "INSERT into tokens (userid, token) VALUES (%s, %s)"
+        values = (user, token)
+        cursor = db.cursor(buffered=True)
+        cursor.execute(query, values)
+        db.commit()
+        cursor.close()
+        db.close()
+        return token
+    except:
+        return False
 
 def checkauth():
-    try:
+        db = mysql.connect(
+            host = os.getenv('DBHOST'),
+            user = os.getenv('DBUSER'),
+            passwd = os.getenv('DBPASS'),
+            database = os.getenv('DBNAME')
+        )
         token = request.headers.get('authtoken')
         query = "SELECT * from tokens WHERE token = %s"
         values = (token, )
         cursor = db.cursor(buffered=True)
         cursor.execute(query, values)
+        db.close()
         if cursor.rowcount > 0:
             record = cursor.fetchone()
+            cursor.close()
             return (True, record[1])
         else:
             return False
-    except:
-        return False
 
 def getalerts():
     try:
+        db = mysql.connect(
+            host = os.getenv('DBHOST'),
+            user = os.getenv('DBUSER'),
+            passwd = os.getenv('DBPASS'),
+            database = os.getenv('DBNAME')
+        )
         query = "SELECT * from alerts"
         cursor = db.cursor(buffered=True)
         cursor.execute(query)
         alerts = cursor.fetchall()
+        cursor.close()
+        db.close()
         response = []
         for alert in alerts:
             aresp = {
@@ -84,10 +116,18 @@ def getalerts():
 
 def getcontacts():
     try:
+        db = mysql.connect(
+            host = os.getenv('DBHOST'),
+            user = os.getenv('DBUSER'),
+            passwd = os.getenv('DBPASS'),
+            database = os.getenv('DBNAME')
+        )
         query = "SELECT * from contacts"
         cursor = db.cursor(buffered=True)
         cursor.execute(query)
         contacts = cursor.fetchall()
+        cursor.close()
+        db.close()
         response = []
         for contact in contacts:
             cresp = {
@@ -117,12 +157,20 @@ def getcontacts():
 
 @app.route('/refreshdata/', methods=['GET'])
 def refresh_data():
+    db = mysql.connect(
+        host = os.getenv('DBHOST'),
+        user = os.getenv('DBUSER'),
+        passwd = os.getenv('DBPASS'),
+        database = os.getenv('DBNAME')
+    )
     query = "TRUNCATE table alerts"
     cursor = db.cursor(buffered=True)
     cursor.execute(query)
+    cursor.close()
     query = "TRUNCATE table contacts"
     cursor = db.cursor(buffered=True)
     cursor.execute(query)
+    cursor.close()
     fileObject = open("alerts.json", "r")
     jsonContent = fileObject.read()
     jsonObj = json.loads(jsonContent)
@@ -132,6 +180,7 @@ def refresh_data():
         cursor = db.cursor(buffered=True)
         cursor.execute(query, values)
         db.commit()
+        cursor.close()
     fileObject2 = open("contacts.json", "r")
     jsonContent = fileObject2.read()
     jsonObj = json.loads(jsonContent)
@@ -141,12 +190,13 @@ def refresh_data():
         cursor = db.cursor(buffered=True)
         cursor.execute(query, values)
         db.commit()
+        cursor.close()
     return "complete"
 
 @app.route('/getappdata/', methods=['post'])
 def get_app_data():
     auth = checkauth()
-    if auth != False:
+    if auth[0] == True:
         userid = auth[1]
         userdata = getuser(userid)
         user = {
@@ -169,27 +219,52 @@ def get_app_data():
             "message": "noauth"
         })
 
+@app.route('/getalerts/', methods=['post'])
+def get_alerts():
+    auth = checkauth()
+    if auth[0] == True:
+        alerts = getalerts()
+        response = {
+            "alerts": alerts,
+        }
+        return jsonify(response)
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "noauth"
+        })
+
+@app.route('/getcontacts/', methods=['post'])
+def get_contacts():
+    auth = checkauth()
+    if auth[0] == True:
+        contacts = getcontacts()
+        response = {
+            "contacts": contacts,
+        }
+        return jsonify(response)
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "noauth"
+        })
+
 
 @app.route('/login/', methods=['POST'])
 def login_user():
     req_data = request.get_json()
     if req_data:
-        try:
-            record = getuserbyemail(req_data['useremail'])
-            storedpw = record[4]
-            if(bcrypt.checkpw(req_data['userpass'].encode(), storedpw.encode())):
-                return jsonify({
-                    "status": f"success",
-                    "message": createtoken(record[0])
-                })
-            else:
-                return jsonify({
-                    "status": f"error",
-                    "message": f"Invalid Login"
-                })
-        except:
+        record = getuserbyemail(req_data['useremail'])
+        storedpw = record[4]
+        if(bcrypt.checkpw(req_data['userpass'].encode(), storedpw.encode())):
             return jsonify({
-                "status": "Invalid Login"
+                "status": f"success",
+                "message": createtoken(record[0])
+            })
+        else:
+            return jsonify({
+                "status": f"error",
+                "message": f"Invalid Login"
             })
     else:
         return jsonify({
@@ -232,11 +307,19 @@ def add_user():
             })
         # We good
         hashpw = bcrypt.hashpw(userpass.encode(), bcrypt.gensalt())
+        db = mysql.connect(
+            host = os.getenv('DBHOST'),
+            user = os.getenv('DBUSER'),
+            passwd = os.getenv('DBPASS'),
+            database = os.getenv('DBNAME')
+        )
         cursor = db.cursor()
         query = "INSERT into users (userf, userl, email, password) VALUES (%s, %s, %s, %s)"
         values = (userf, userl, useremail, hashpw)
         cursor.execute(query, values)
         db.commit()
+        cursor.close()
+        db.close()
         getuser = getuserbyemail(useremail)
         token = createtoken(getuser[0])
         return jsonify({

@@ -44,7 +44,7 @@ export default {
   data() {
       return{
           alerts: {},
-          contact: {},
+          contacts: {},
           user: {}
       }
   },
@@ -56,10 +56,11 @@ export default {
       }
   },
   methods: {
-      processAppData(data){
+      processAlerts(data){
           this.alerts = data['alerts']
+      },
+      processContacts(data){
           this.contacts = data['contacts']
-          this.user = data['user']
       },
       errorNotify(){
 
@@ -74,9 +75,9 @@ export default {
                         'authtoken': window.localStorage.getItem("authtoken")},
                     body:  JSON.stringify({status: "get"})
                     }
-                fetch('/getappdata', fetchbody).then((response) => response.json()).then(
+                fetch('/getalerts', fetchbody).then((response) => response.json()).then(
                     data => (
-                        this.processAppData(data)
+                        this.processAlerts(data)
                     )
                 ).catch(error => 
                     this.errorNotify()
@@ -85,6 +86,25 @@ export default {
                 catch(e) {
                     this.errorNotify()
                 }
+        try{
+            const fetchbody = {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'Application/json',
+                    'authtoken': window.localStorage.getItem("authtoken")},
+                body:  JSON.stringify({status: "get"})
+                }
+            fetch('/getcontacts', fetchbody).then((response) => response.json()).then(
+                data => (
+                    this.processContacts(data)
+                )
+            ).catch(error => 
+                this.errorNotify()
+            );
+            }
+            catch(e) {
+                this.errorNotify()
+            }
   }
 }
 </script>
