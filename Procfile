@@ -1,1 +1,1 @@
-web: gunicorn --workers=5 --worker-connections=5 --no-sendfile app:app --reload
+web: python app.py
