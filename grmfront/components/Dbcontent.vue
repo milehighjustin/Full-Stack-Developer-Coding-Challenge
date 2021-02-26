@@ -126,7 +126,7 @@ export default {
                         'authtoken': window.localStorage.getItem("authtoken")},
                     body:  JSON.stringify({status: "get"})
                     }
-                fetch('/getalerts', fetchbody).then((response) => response.json()).then(
+                fetch('https://justingrm.herokuapp.com/getalerts', fetchbody).then((response) => response.json()).then(
                     data => (
                         this.processAlerts(data)
                     )
@@ -145,7 +145,7 @@ export default {
                     'authtoken': window.localStorage.getItem("authtoken")},
                 body:  JSON.stringify({status: "get"})
                 }
-            fetch('/getcontacts', fetchbody).then((response) => response.json()).then(
+            fetch('https://justingrm.herokuapp.com/', fetchbody).then((response) => response.json()).then(
                 data => (
                     this.processContacts(data)
                 )
