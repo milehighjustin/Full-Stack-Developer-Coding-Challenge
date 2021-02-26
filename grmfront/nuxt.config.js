@@ -17,12 +17,14 @@ export default {
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
+        { rel: 'stylesheet', href: 'astro.css' },
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
+      '~/assets/style.css'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
@@ -40,6 +42,7 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/bootstrap
     'bootstrap-vue/nuxt',
+
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
