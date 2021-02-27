@@ -7,7 +7,7 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'grmfront',
+    title: 'JustinGRM',
     htmlAttrs: {
       lang: 'en'
     },
@@ -44,7 +44,7 @@ export default {
     'bootstrap-vue/nuxt',
 
   ],
-  
+
   bootstrapVue: {
     icons: true
   },

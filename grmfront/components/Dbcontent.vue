@@ -108,10 +108,12 @@ export default {
 
       },
       converttime(timeobj){
-          return moment(timeobj).utc().format('HH:mm:ss')
-      },
+          var date = new Date(timeobj*1000);
+          return date.toUTCString()
+    },
       convertalerttime(timeobj){
-          return moment.unix(timeobj).utc().format('HH:mm:ss')
+          var date= new Date(timeobj*1);
+          return date.toUTCString()
       }
   },
   mounted(){
@@ -126,7 +128,7 @@ export default {
                         'authtoken': window.localStorage.getItem("authtoken")},
                     body:  JSON.stringify({status: "get"})
                     }
-                fetch('https://justingrm.herokuapp.com/getalerts', fetchbody).then((response) => response.json()).then(
+                fetch('/getalerts', fetchbody).then((response) => response.json()).then(
                     data => (
                         this.processAlerts(data)
                     )
@@ -145,7 +147,7 @@ export default {
                     'authtoken': window.localStorage.getItem("authtoken")},
                 body:  JSON.stringify({status: "get"})
                 }
-            fetch('https://justingrm.herokuapp.com/', fetchbody).then((response) => response.json()).then(
+            fetch('/getcontacts', fetchbody).then((response) => response.json()).then(
                 data => (
                     this.processContacts(data)
                 )
